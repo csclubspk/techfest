@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Registration, Event } from '../../types'
@@ -29,8 +29,7 @@ const ParticipantDashboard = () => {
     try {
       const q = query(
         collection(db, 'registrations'),
-        where('userId', '==', user.uid),
-        orderBy('registeredAt', 'desc')
+        where('userId', '==', user.uid)
       )
       const snapshot = await getDocs(q)
       const regs = snapshot.docs.map(doc => ({
@@ -60,6 +59,12 @@ const ParticipantDashboard = () => {
           return reg
         })
       )
+
+      // Sort by registeredAt descending (most recent first)
+      regsWithEvents.sort((a, b) => {
+        if (!a.registeredAt || !b.registeredAt) return 0
+        return b.registeredAt.getTime() - a.registeredAt.getTime()
+      })
 
       setRegistrations(regsWithEvents)
     } catch (error) {
