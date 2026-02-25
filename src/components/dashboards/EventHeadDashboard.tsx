@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc, addDoc, Timestamp } 
 import { db } from '../../lib/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Event, Registration, Winner } from '../../types'
-import { Users, CheckCircle, Trophy, Edit, Play, Award, Upload } from 'lucide-react'
+import { Users, CheckCircle, Trophy, Edit, Play, Award, Upload, Square } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { uploadImage } from '../../utils/imageUpload'
@@ -127,6 +127,34 @@ const EventHeadDashboard = () => {
     } catch (error) {
       console.error('Error starting event:', error)
       toast.error('Failed to start event')
+    }
+  }
+
+  const endEvent = async () => {
+    if (!selectedEvent || !user) return
+
+    try {
+      // Mark event as not live
+      await updateDoc(doc(db, 'events', selectedEvent.id), {
+        isLive: false,
+        updatedAt: new Date(),
+      })
+
+      // Create announcement
+      await addDoc(collection(db, 'announcements'), {
+        title: `${selectedEvent.title} has ended`,
+        content: `The event "${selectedEvent.title}" has concluded. Thank you to all participants!`,
+        author: user.displayName || 'Event Head',
+        authorId: user.uid,
+        priority: 'medium',
+        createdAt: Timestamp.now(),
+      })
+
+      setSelectedEvent({ ...selectedEvent, isLive: false })
+      toast.success('Event ended and announcement posted!')
+    } catch (error) {
+      console.error('Error ending event:', error)
+      toast.error('Failed to end event')
     }
   }
 
@@ -513,10 +541,19 @@ const EventHeadDashboard = () => {
                     <span>Start Event</span>
                   </button>
                 ) : (
-                  <div className="px-4 py-2 bg-green-600/20 text-green-400 rounded-lg flex items-center space-x-2">
-                    <CheckCircle size={18} />
-                    <span>Event is Live</span>
-                  </div>
+                  <>
+                    <div className="px-4 py-2 bg-green-600/20 text-green-400 rounded-lg flex items-center space-x-2">
+                      <CheckCircle size={18} />
+                      <span>Event is Live</span>
+                    </div>
+                    <button
+                      onClick={endEvent}
+                      className="btn-secondary flex items-center space-x-2"
+                    >
+                      <Square size={18} />
+                      <span>End Event</span>
+                    </button>
+                  </>
                 )}
 
                 {winners.length === 0 ? (
