@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, Timestamp } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { Event, User } from '../../types'
-import { Plus, Edit, Trash2, Users, Calendar, TrendingUp, UserCog } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Calendar, TrendingUp, UserCog, Megaphone, Upload } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../contexts/AuthContext'
+import { uploadImage } from '../../utils/imageUpload'
 
 const AdminDashboard = () => {
+  const { user } = useAuth()
   const [events, setEvents] = useState<Event[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [showEventForm, setShowEventForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [showUserManagement, setShowUserManagement] = useState(false)
+  const [showAnnouncementForm, setShowAnnouncementForm] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -23,6 +28,11 @@ const AdminDashboard = () => {
     maxParticipants: 50,
     rules: [''],
     eligibility: '',
+  })
+  const [announcementForm, setAnnouncementForm] = useState({
+    title: '',
+    content: '',
+    priority: 'medium' as 'low' | 'medium' | 'high',
   })
 
   useEffect(() => {
@@ -177,6 +187,45 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleCreateAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user) return
+
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        title: announcementForm.title,
+        content: announcementForm.content,
+        author: user.displayName || 'Admin',
+        authorId: user.uid,
+        priority: announcementForm.priority,
+        createdAt: Timestamp.now(),
+      })
+
+      toast.success('Announcement posted successfully!')
+      setAnnouncementForm({ title: '', content: '', priority: 'medium' })
+      setShowAnnouncementForm(false)
+    } catch (error) {
+      console.error('Error creating announcement:', error)
+      toast.error('Failed to post announcement')
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
+    try {
+      const imageUrl = await uploadImage(file, 'events')
+      setEventForm({ ...eventForm, banner: imageUrl })
+      toast.success('Image uploaded successfully!')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload image')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
@@ -263,6 +312,79 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Announcements */}
+        <div className="glass-card p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center space-x-2">
+              <Megaphone size={24} className="text-blue-400" />
+              <span>Announcements</span>
+            </h2>
+            <button
+              onClick={() => setShowAnnouncementForm(!showAnnouncementForm)}
+              className="btn-primary flex items-center space-x-2"
+            >
+              <Plus size={20} />
+              <span>New Announcement</span>
+            </button>
+          </div>
+
+          {showAnnouncementForm && (
+            <form onSubmit={handleCreateAnnouncement} className="space-y-4 mb-6 p-4 glass-card rounded-lg">
+              <div>
+                <label className="block text-sm font-medium mb-2">Title</label>
+                <input
+                  type="text"
+                  value={announcementForm.title}
+                  onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+                  className="input-field"
+                  placeholder="Announcement title..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Content</label>
+                <textarea
+                  value={announcementForm.content}
+                  onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
+                  className="input-field min-h-[120px]"
+                  placeholder="Announcement content..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Priority</label>
+                <select
+                  value={announcementForm.priority}
+                  onChange={(e) => setAnnouncementForm({ ...announcementForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
+                  className="input-field"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-4">
+                <button type="submit" className="btn-primary">
+                  Post Announcement
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAnnouncementForm(false)
+                    setAnnouncementForm({ title: '', content: '', priority: 'medium' })
+                  }}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+
         {/* Event Management */}
         <div className="glass-card p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
@@ -312,16 +434,53 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Event Banner Image URL (Optional)</label>
-                <input
-                  type="url"
-                  value={eventForm.banner}
-                  onChange={(e) => setEventForm({ ...eventForm, banner: e.target.value })}
-                  className="input-field"
-                  placeholder="https://example.com/image.jpg"
-                />
-                <p className="text-sm text-gray-500 mt-1">Paste a direct link to an image (e.g., from imgur, cloudinary, or your website)</p>
+              <div className="space-y-3">
+                <label className="block text-sm font-medium">Event Banner Image</label>
+                
+                {/* File Upload Option */}
+                <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                  <label className="flex flex-col items-center cursor-pointer">
+                    <Upload className="text-blue-400 mb-2" size={40} />
+                    <span className="text-sm text-gray-400 mb-2">
+                      {uploadingImage ? 'Uploading...' : 'Click to upload image from computer'}
+                    </span>
+                    <span className="text-xs text-gray-500">Max 5MB • JPEG, PNG, GIF, WebP</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={uploadingImage}
+                    />
+                  </label>
+                </div>
+
+                {/* URL Input Option */}
+                <div>
+                  <input
+                    type="url"
+                    value={eventForm.banner}
+                    onChange={(e) => setEventForm({ ...eventForm, banner: e.target.value })}
+                    className="input-field"
+                    placeholder="Or paste image URL (https://example.com/image.jpg)"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">You can upload a file or paste a URL</p>
+                </div>
+
+                {/* Image Preview */}
+                {eventForm.banner && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Preview</label>
+                    <img
+                      src={eventForm.banner}
+                      alt="Banner preview"
+                      className="w-full h-48 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://via.placeholder.com/800x200?text=Invalid+Image'
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid md:grid-cols-3 gap-4">

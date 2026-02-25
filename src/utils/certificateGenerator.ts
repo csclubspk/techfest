@@ -17,94 +17,141 @@ export const generateCertificate = async (data: CertificateData) => {
   const pageWidth = pdf.internal.pageSize.getWidth()
   const pageHeight = pdf.internal.pageSize.getHeight()
 
-  // Background gradient effect (simulated with rectangles)
-  pdf.setFillColor(10, 10, 20)
+  // White background
+  pdf.setFillColor(255, 255, 255)
   pdf.rect(0, 0, pageWidth, pageHeight, 'F')
 
-  // Border
-  pdf.setDrawColor(59, 130, 246)
-  pdf.setLineWidth(2)
+  // Navy blue outer border (#002147)
+  pdf.setDrawColor(0, 33, 71)
+  pdf.setLineWidth(6)
+  pdf.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S')
+
+  // Gold inner border
+  pdf.setDrawColor(255, 215, 0)
+  pdf.setLineWidth(1.5)
   pdf.rect(10, 10, pageWidth - 20, pageHeight - 20, 'S')
 
-  pdf.setDrawColor(168, 85, 247)
-  pdf.setLineWidth(1)
-  pdf.rect(12, 12, pageWidth - 24, pageHeight - 24, 'S')
-
-  // Title
-  pdf.setTextColor(59, 130, 246)
-  pdf.setFontSize(48)
+  // Watermark
+  pdf.setTextColor(0, 0, 0, 0.04)
+  pdf.setFontSize(80)
   pdf.setFont('helvetica', 'bold')
-  pdf.text('CERTIFICATE', pageWidth / 2, 40, { align: 'center' })
+  pdf.text('TECHFEST', pageWidth / 2, pageHeight / 2, { 
+    align: 'center',
+    angle: 0
+  })
 
-  pdf.setFontSize(20)
-  pdf.setTextColor(168, 85, 247)
-  pdf.text('OF PARTICIPATION', pageWidth / 2, 52, { align: 'center' })
-
-  // Body text
-  pdf.setTextColor(200, 200, 200)
+  // College Header
+  pdf.setTextColor(0, 33, 71)
+  pdf.setFontSize(13)
+  pdf.setFont('times', 'bold')
+  pdf.text("Sindhudurg Zilla Shikshan Prasarak Mandal's", pageWidth / 2, 25, { align: 'center' })
+  
   pdf.setFontSize(14)
-  pdf.setFont('helvetica', 'normal')
-  pdf.text('This is to certify that', pageWidth / 2, 75, { align: 'center' })
+  pdf.text('Shri Pancham Khemraj Mahavidyalaya, Sawantwadi', pageWidth / 2, 32, { align: 'center' })
+  
+  pdf.setFontSize(11)
+  pdf.text('(Autonomous)', pageWidth / 2, 38, { align: 'center' })
+  
+  pdf.setFontSize(9)
+  pdf.setFont('times', 'normal')
+  pdf.text('Affiliated to University of Mumbai', pageWidth / 2, 43, { align: 'center' })
+  pdf.text("NAAC Re-Accreditated 'A' Grade in 3rd Cycle with 3.06 CGPA (May 2019)", pageWidth / 2, 47, { align: 'center' })
+  pdf.text('Website: https://www.spkcollege.org/', pageWidth / 2, 51, { align: 'center' })
 
-  // Participant name
-  pdf.setFontSize(32)
-  pdf.setFont('helvetica', 'bold')
+  // Red ribbon for certificate title
+  pdf.setFillColor(139, 0, 0)
+  const ribbonWidth = 160
+  const ribbonX = (pageWidth - ribbonWidth) / 2
+  pdf.roundedRect(ribbonX, 60, ribbonWidth, 16, 3, 3, 'F')
+  
   pdf.setTextColor(255, 255, 255)
-  pdf.text(data.userName, pageWidth / 2, 90, { align: 'center' })
+  pdf.setFontSize(18)
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('CERTIFICATE OF PARTICIPATION', pageWidth / 2, 70, { align: 'center' })
+
+  // Certificate content
+  pdf.setTextColor(0, 0, 0)
+  pdf.setFontSize(12)
+  pdf.setFont('times', 'normal')
+  pdf.text('This is to certify that', pageWidth / 2, 90, { align: 'center' })
+
+  // Participant Name
+  pdf.setFontSize(18)
+  pdf.setFont('times', 'bold')
+  pdf.text(data.userName, pageWidth / 2, 100, { align: 'center' })
+  
+  pdf.setFontSize(10)
+  pdf.setFont('times', 'italic')
+  pdf.text('(Name of the Participant)', pageWidth / 2, 105, { align: 'center' })
 
   // Event details
-  pdf.setFontSize(14)
-  pdf.setFont('helvetica', 'normal')
-  pdf.setTextColor(200, 200, 200)
-  pdf.text('has successfully participated in', pageWidth / 2, 105, { align: 'center' })
+  pdf.setFontSize(12)
+  pdf.setFont('times', 'normal')
+  pdf.text('has actively participated in the event', pageWidth / 2, 118, { align: 'center' })
 
-  pdf.setFontSize(24)
-  pdf.setFont('helvetica', 'bold')
-  pdf.setTextColor(59, 130, 246)
-  pdf.text(data.eventTitle, pageWidth / 2, 120, { align: 'center' })
-
-  pdf.setFontSize(14)
-  pdf.setFont('helvetica', 'normal')
-  pdf.setTextColor(200, 200, 200)
-  pdf.text(
-    `held on ${data.eventDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })}`,
-    pageWidth / 2,
-    135,
-    { align: 'center' }
-  )
-
-  // College branding
   pdf.setFontSize(16)
+  pdf.setFont('times', 'bold')
+  pdf.text(data.eventTitle, pageWidth / 2, 128, { align: 'center' })
+  
+  pdf.setFontSize(10)
+  pdf.setFont('times', 'italic')
+  pdf.text('(Name of the Event)', pageWidth / 2, 133, { align: 'center' })
+
+  // TechFest info
+  pdf.setFontSize(12)
+  pdf.setFont('times', 'normal')
+  pdf.text('during ', pageWidth / 2 - 52, 145, { align: 'left' })
+  pdf.setFont('times', 'bold')
+  pdf.text('TechFest 2026', pageWidth / 2 - 25, 145, { align: 'left' })
+  pdf.setFont('times', 'normal')
+  pdf.text(' organized by the Department of Computer Science,', pageWidth / 2 + 10, 145, { align: 'left' })
+  pdf.text('Shri Pancham Khemraj Mahavidyalaya, Sawantwadi.', pageWidth / 2, 152, { align: 'center' })
+
+  // Date
+  pdf.setFontSize(11)
+  pdf.text(`Date: ${data.eventDate.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit', 
+    year: 'numeric'
+  })}`, pageWidth / 2, 165, { align: 'center' })
+
+  // Gold Seal
+  const sealX = pageWidth - 45
+  const sealY = 120
+  pdf.setFillColor(212, 175, 55)
+  pdf.circle(sealX, sealY, 15, 'F')
+  pdf.setTextColor(0, 33, 71)
+  pdf.setFontSize(11)
   pdf.setFont('helvetica', 'bold')
-  pdf.setTextColor(168, 85, 247)
-  pdf.text('SPK COLLEGE', pageWidth / 2, 155, { align: 'center' })
+  pdf.text('TECHFEST', sealX, sealY - 2, { align: 'center' })
+  pdf.text('2026', sealX, sealY + 4, { align: 'center' })
+
+  // Signature lines
+  pdf.setDrawColor(0, 0, 0)
+  pdf.setLineWidth(0.5)
+  
+  // Left signature (HOD)
+  const leftSigX = 60
+  const sigY = pageHeight - 30
+  pdf.line(leftSigX - 25, sigY, leftSigX + 25, sigY)
+  pdf.setTextColor(0, 0, 0)
+  pdf.setFontSize(10)
+  pdf.setFont('times', 'normal')
+  pdf.text('HOD', leftSigX, sigY + 5, { align: 'center' })
+  pdf.text('Department of Computer Science', leftSigX, sigY + 10, { align: 'center' })
+
+  // Right signature (Principal)
+  const rightSigX = pageWidth - 60
+  pdf.line(rightSigX - 25, sigY, rightSigX + 25, sigY)
+  pdf.text('Principal', rightSigX, sigY + 5, { align: 'center' })
 
   // Verification ID
-  pdf.setFontSize(10)
-  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(8)
   pdf.setTextColor(100, 100, 100)
-  pdf.text(`Verification ID: ${data.verificationId}`, pageWidth / 2, pageHeight - 20, { 
+  pdf.text(`Verification ID: ${data.verificationId}`, pageWidth / 2, pageHeight - 8, { 
     align: 'center' 
   })
 
-  // Signature lines
-  pdf.setDrawColor(100, 100, 100)
-  pdf.setLineWidth(0.5)
-  
-  // Left signature
-  pdf.line(40, 170, 90, 170)
-  pdf.setFontSize(10)
-  pdf.setTextColor(150, 150, 150)
-  pdf.text('Event Coordinator', 65, 177, { align: 'center' })
-
-  // Right signature
-  pdf.line(pageWidth - 90, 170, pageWidth - 40, 170)
-  pdf.text('Director, SPK College', pageWidth - 65, 177, { align: 'center' })
-
   // Download the PDF
-  pdf.save(`${data.userName}_${data.eventTitle}_Certificate.pdf`)
+  pdf.save(`TechFest_2026_${data.userName}_${data.eventTitle}_Certificate.pdf`)
 }

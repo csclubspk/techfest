@@ -14,5 +14,5 @@ export const firebaseConfig = {
 // Firebase services configured:
 // ✓ Authentication (Email/Password + Google)
 // ✓ Firestore Database
+// ✓ Cloud Storage (for event images)
 // ✓ Analytics
-// Note: Storage is NOT enabled for this project
