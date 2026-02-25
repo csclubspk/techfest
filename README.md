@@ -16,9 +16,11 @@ A modern, production-ready full-stack web application for managing college techn
 ### For Event Heads:
 1. **Admin creates** your account with Event Head role
 2. **Login** to view your assigned events
-3. **Approve registrations** by marking attendance during events
-4. **Select winners** after event completion
-5. **Generate reports** for your events
+3. **Edit event details** (description and banner image)
+4. **Start the event** (automatically posts announcement)
+5. **Mark attendance** during events
+6. **Select winners** (1st, 2nd, 3rd place)
+7. **Auto-announce winners** when declared
 
 ### For Coordinators:
 1. **Admin creates** your account with Coordinator role
@@ -28,14 +30,26 @@ A modern, production-ready full-stack web application for managing college techn
 
 ### For Admins:
 1. **Create events** for the TechFest
-2. **Create Coordinator & Event Head accounts**
-3. **Assign Event Heads** to specific events
-4. **Manage all users** and system settings
-5. **Export data** and view analytics
+2. **Upload event banners** (file upload or URL)
+3. **Create Coordinator & Event Head accounts**
+4. **Assign Event Heads** to specific events
+5. **Post announcements** to all participants
+6. **Manage all users** and system settings
+7. **Export data** and view analytics
 
 ---
 
 ## 🚀 Features
+
+### 🆕 Latest Features (2026)
+- **Official Certificate Design**: SPK College branded certificates with proper formatting
+- **Image Upload**: Upload event banners directly from your computer (max 5MB)
+- **Winner Selection**: Event heads can declare 1st, 2nd, and 3rd place winners
+- **Auto-Announcements**: 
+  - Event starts automatically post announcements
+  - Winner declarations auto-post to announcements
+- **Admin Announcements**: Custom announcements with priority levels (Low, Medium, High)
+- **Event Controls**: Start/stop events with live status indicators
 
 ### Authentication & Authorization
 - **Firebase Authentication** (Email/Password + Google OAuth)
@@ -49,12 +63,12 @@ A modern, production-ready full-stack web application for managing college techn
 
 #### Admin Dashboard
 - Create, edit, and delete events
+- Upload event banner images (file upload or URL)
+- Post announcements with priority levels
 - Assign coordinators and event heads
 - Manage user roles
 - View analytics and statistics
 - Export participant data
-- Post announcements
-- Approve winners
 
 #### Coordinator Dashboard
 - View all events and registrations
@@ -65,15 +79,18 @@ A modern, production-ready full-stack web application for managing college techn
 
 #### Event Head Dashboard
 - Manage assigned events only
-- Add/edit event details
+- Edit event details (description and banner)
+- Upload event banner images
+- Start event (triggers auto-announcement)
 - View event participants
 - Mark attendance
 - Select winners (1st, 2nd, 3rd place)
+- Auto-announce winners when declared
 
 #### Participant Dashboard
-- Create and edit profile
-- Register for multiple events
-- View registered events
+- Create and edit pro (including live event updates)
+- View winners
+- Download auto-generated participation certificates (PDF with official SPK College format
 - Check announcements
 - View winners
 - Download auto-generated participation certificates (PDF)
@@ -100,6 +117,7 @@ A modern, production-ready full-stack web application for managing college techn
 ### Backend
 - **Firebase Authentication**
 - **Cloud Firestore** (Real-time database)
+- **Cloud Storage** (Event banner images)
 - **Firestore Security Rules** (Role-based access)
 
 ### Libraries
@@ -140,7 +158,13 @@ npm install
       - Start in production mode
       - Choose your location
 
-   e. Get your Firebase config:
+   e. Enable Cloud Storage:
+      - Go to Storage in Firebase Console
+      - Click "Get Started"
+      - Start in production mode
+      - Choose your location (same as Firestore)
+
+   f. Get your Firebase config:
       - Go to Project Settings > Your Apps
       - Click "Add app" > Web
       - Copy the configuration
@@ -167,12 +191,18 @@ npm install -g firebase-tools
 # Login to Firebase
 firebase login
 
-# Initialize Firebase (if not done)
+# Initialize Firebase (select Firestore and Storage)
 firebase init
 
-# Deploy Firestore rules
-firebase deploy --only firestore:rules
+# Deploy Firestore and Storage rules
+firebase deploy --only firestore:rules,storage:rules
 ```
+
+**Note:** If you get permission errors during deployment:
+1. Go to Firebase Console > Storage
+2. Click on "Rules" tab
+3. Manually copy the rules from `storage.rules` file
+4. Publish the rules
 
 ## 🚀 Development
 
