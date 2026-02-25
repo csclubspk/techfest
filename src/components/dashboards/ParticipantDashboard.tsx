@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react'
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
+import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { useAuth } from '../../contexts/AuthContext'
-import { Registration } from '../../types'
-import { Calendar, Trophy, Download } from 'lucide-react'
+import { Registration, Event } from '../../types'
+import { Calendar, Trophy, Download, MapPin, Clock } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { format } from 'date-fns'
+import { generateCertificate } from '../../utils/certificateGenerator'
+import toast from 'react-hot-toast'
+
+interface RegistrationWithEvent extends Registration {
+  event?: Event
+}
 
 const ParticipantDashboard = () => {
   const { user } = useAuth()
-  const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [registrations, setRegistrations] = useState<RegistrationWithEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [downloadingCert, setDownloadingCert] = useState<string | null>(null)
 
   useEffect(() => {
     loadRegistrations()
@@ -30,12 +37,58 @@ const ParticipantDashboard = () => {
         id: doc.id,
         ...doc.data(),
         registeredAt: doc.data().registeredAt?.toDate(),
-      })) as Registration[]
-      setRegistrations(regs)
+      })) as RegistrationWithEvent[]
+
+      // Fetch event details for each registration
+      const regsWithEvents = await Promise.all(
+        regs.map(async (reg) => {
+          try {
+            const eventDoc = await getDoc(doc(db, 'events', reg.eventId))
+            if (eventDoc.exists()) {
+              const eventData = {
+                id: eventDoc.id,
+                ...eventDoc.data(),
+                eventDate: eventDoc.data().eventDate?.toDate(),
+                createdAt: eventDoc.data().createdAt?.toDate(),
+                updatedAt: eventDoc.data().updatedAt?.toDate(),
+              } as Event
+              return { ...reg, event: eventData }
+            }
+          } catch (error) {
+            console.error('Error fetching event:', error)
+          }
+          return reg
+        })
+      )
+
+      setRegistrations(regsWithEvents)
     } catch (error) {
       console.error('Error loading registrations:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDownloadCertificate = async (reg: RegistrationWithEvent) => {
+    if (!reg.attended || !reg.event || !user) {
+      toast.error('Certificate not available. Event attendance required.')
+      return
+    }
+
+    setDownloadingCert(reg.id)
+    try {
+      await generateCertificate({
+        userName: user.displayName || 'Participant',
+        eventTitle: reg.eventTitle,
+        eventDate: reg.event.eventDate,
+        verificationId: reg.id,
+      })
+      toast.success('Certificate downloaded successfully!')
+    } catch (error) {
+      console.error('Error generating certificate:', error)
+      toast.error('Failed to generate certificate')
+    } finally {
+      setDownloadingCert(null)
     }
   }
 
@@ -91,40 +144,95 @@ const ParticipantDashboard = () => {
 
         {/* Registrations List */}
         <div className="glass-card p-6 rounded-xl">
-          <h2 className="text-2xl font-bold mb-6">My Events</h2>
+          <h2 className="text-2xl font-bold mb-6">My Registered Events</h2>
           
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           ) : registrations.length > 0 ? (
-            <div className="space-y-4">
+            <div className="grid gap-6">
               {registrations.map((reg) => (
-                <div
+                <motion.div
                   key={reg.id}
-                  className="glass-card p-4 rounded-lg hover:bg-white/10 transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-card p-6 rounded-lg hover:bg-white/5 transition-all"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg">{reg.eventTitle}</h3>
-                      <p className="text-gray-400 text-sm">
-                        Registered on {format(reg.registeredAt, 'MMM dd, yyyy')}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      {reg.attended && (
-                        <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm">
-                          Attended
-                        </span>
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-bold text-xl mb-1">{reg.eventTitle}</h3>
+                          <p className="text-sm text-gray-400">
+                            Registered on {format(reg.registeredAt, 'MMM dd, yyyy - hh:mm a')}
+                          </p>
+                        </div>
+                        {reg.attended && (
+                          <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-semibold">
+                            ✓ Attended
+                          </span>
+                        )}
+                      </div>
+
+                      {reg.event && (
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                          <div className="flex items-center text-gray-400">
+                            <Calendar size={16} className="mr-2 text-blue-400" />
+                            <span>{format(reg.event.eventDate, 'MMM dd, yyyy')}</span>
+                          </div>
+                          <div className="flex items-center text-gray-400">
+                            <Clock size={16} className="mr-2 text-purple-400" />
+                            <span>{reg.event.eventTime}</span>
+                          </div>
+                          <div className="flex items-center text-gray-400">
+                            <MapPin size={16} className="mr-2 text-green-400" />
+                            <span>{reg.event.location}</span>
+                          </div>
+                        </div>
                       )}
-                      {reg.certificateId && (
-                        <button className="btn-secondary text-sm">
-                          Download Certificate
+
+                      {reg.event?.banner && (
+                        <div className="mt-4">
+                          <img
+                            src={reg.event.banner}
+                            alt={reg.eventTitle}
+                            className="w-full h-32 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-2 lg:ml-4">
+                      {reg.attended ? (
+                        <button
+                          onClick={() => handleDownloadCertificate(reg)}
+                          disabled={downloadingCert === reg.id}
+                          className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap"
+                        >
+                          <Download size={18} />
+                          <span>
+                            {downloadingCert === reg.id ? 'Generating...' : 'Download Certificate'}
+                          </span>
                         </button>
+                      ) : (
+                        <div className="px-4 py-2 bg-yellow-600/20 text-yellow-400 rounded-lg text-sm text-center">
+                          <p className="font-semibold">Pending</p>
+                          <p className="text-xs mt-1">Attendance not marked yet</p>
+                        </div>
+                      )}
+                      
+                      {reg.event?.isLive && (
+                        <div className="px-4 py-2 bg-red-600/20 text-red-400 rounded-lg text-sm text-center font-semibold animate-pulse">
+                          🔴 LIVE NOW
+                        </div>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           ) : (
