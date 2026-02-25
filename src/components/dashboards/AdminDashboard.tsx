@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { Event, User } from '../../types'
-import { Plus, Edit, Trash2, Users, Calendar, TrendingUp, UserCog, Shield } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Calendar, TrendingUp, UserCog } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 
@@ -11,7 +11,6 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([])
   const [showEventForm, setShowEventForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [showUserManagement, setShowUserManagement] = useState(false)
   const [eventForm, setEventForm] = useState({
     title: '',
