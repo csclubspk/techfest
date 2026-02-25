@@ -10,8 +10,8 @@ A modern, production-ready full-stack web application for managing college techn
 1. **Register** directly on the website (no approval needed)
 2. **Login** and browse available events
 3. **Select & register** for events you want to participate in
-4. **View dashboard** to track your registered events
-5. **Download certificates** after event completion (once approved by Event Head)
+4. **View dashboard** to see all registered events with details
+5. **Download individual certificates** for each event you attended
 
 ### For Event Heads:
 1. **Admin creates** your account with Event Head role
@@ -20,7 +20,8 @@ A modern, production-ready full-stack web application for managing college techn
 4. **Start the event** (automatically posts announcement)
 5. **Mark attendance** during events
 6. **Select winners** (1st, 2nd, 3rd place)
-7. **Auto-announce winners** when declared
+7. **End the event** (automatically posts completion announcement)
+8. **Auto-announce winners** when declared
 
 ### For Coordinators:
 1. **Admin creates** your account with Coordinator role
@@ -32,9 +33,10 @@ A modern, production-ready full-stack web application for managing college techn
 1. **Create events** for the TechFest
 2. **Upload event banners** (file upload or URL)
 3. **Create Coordinator & Event Head accounts**
-4. **Assign Event Heads** to specific events
-5. **Post announcements** to all participants
-6. **Manage all users** and system settings
+4. **Manage announcements** (Create, Edit, Delete)
+6. **Export participant data** to CSV/Excel
+7. **Manage all users** with separated staff and participant views
+8. **View analytics** and system statism settings
 7. **Export data** and view analytics
 
 ---
@@ -43,13 +45,17 @@ A modern, production-ready full-stack web application for managing college techn
 
 ### 🆕 Latest Features (2026)
 - **Official Certificate Design**: SPK College branded certificates with proper formatting
+- **Individual Event Certificates**: Download participation certificates for each event separately
 - **Image Upload**: Upload event banners directly from your computer (max 5MB)
 - **Winner Selection**: Event heads can declare 1st, 2nd, and 3rd place winners
+- **Event Controls**: Start and end events with automatic announcements
 - **Auto-Announcements**: 
   - Event starts automatically post announcements
+  - Event ends automatically post announcements
   - Winner declarations auto-post to announcements
-- **Admin Announcements**: Custom announcements with priority levels (Low, Medium, High)
-- **Event Controls**: Start/stop events with live status indicators
+- **Admin Announcement CRUD**: Create, edit, and delete announcements with priority levels
+- **Export Participants**: Download all participant data in CSV format (Excel compatible)
+- **Organized User Management**: Separate views for staff (coordinators/event heads) and participants
 
 ### Authentication & Authorization
 - **Firebase Authentication** (Email/Password + Google OAuth)
@@ -64,11 +70,14 @@ A modern, production-ready full-stack web application for managing college techn
 #### Admin Dashboard
 - Create, edit, and delete events
 - Upload event banner images (file upload or URL)
-- Post announcements with priority levels
+- **CRUD operations on announcements** (Create, Read, Update, Delete)
+- Edit announcement priority and content
+- View all announcements with timestamps
+- **Export all participants to CSV/Excel**
 - Assign coordinators and event heads
 - Manage user roles
+- **Separated user management** (Staff vs Participants)
 - View analytics and statistics
-- Export participant data
 
 #### Coordinator Dashboard
 - View all events and registrations
@@ -78,7 +87,8 @@ A modern, production-ready full-stack web application for managing college techn
 - Monitor participant statistics
 
 #### Event Head Dashboard
-- Manage assigned events only
+- **Start event** (triggers auto-announcement)
+- **End event** (triggers completion 
 - Edit event details (description and banner)
 - Upload event banner images
 - Start event (triggers auto-announcement)
@@ -87,11 +97,12 @@ A modern, production-ready full-stack web application for managing college techn
 - Select winners (1st, 2nd, 3rd place)
 - Auto-announce winners when declared
 
-#### Participant Dashboard
-- Create and edit pro (including live event updates)
-- View winners
-- Download auto-generated participation certificates (PDF with official SPK College format
-- Check announcements
+##View all registered events with complete details
+- See event banners, date, time, and location
+- Track attendance status for each event
+- **Download individual certificates** for each attended event
+- View live event indicators
+- Check announcements (including live event updates)
 - View winners
 - Download auto-generated participation certificates (PDF)
 
