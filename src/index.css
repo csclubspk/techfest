@@ -56,4 +56,12 @@ body {
     @apply w-full px-4 py-3 glass-card focus:outline-none focus:ring-2 
            focus:ring-blue-500 transition-all duration-300;
   }
+
+  select.input-field {
+    @apply bg-gray-900 text-white cursor-pointer;
+  }
+
+  select.input-field option {
+    @apply bg-gray-900 text-white py-2;
+  }
 }

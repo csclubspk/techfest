@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Mail, Lock, User, Chrome } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -11,7 +11,6 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const { signUp, signInWithGoogle } = useAuth()
-  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,10 +28,9 @@ const RegisterPage = () => {
     setLoading(true)
     try {
       await signUp(email, password, name)
-      navigate('/dashboard')
+      // Redirect will be handled automatically by App.tsx route
     } catch (error) {
       console.error(error)
-    } finally {
       setLoading(false)
     }
   }
@@ -41,10 +39,9 @@ const RegisterPage = () => {
     setLoading(true)
     try {
       await signInWithGoogle()
-      navigate('/dashboard')
+      // Redirect will be handled automatically by App.tsx route
     } catch (error) {
       console.error(error)
-    } finally {
       setLoading(false)
     }
   }

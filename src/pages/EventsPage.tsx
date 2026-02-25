@@ -13,7 +13,7 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 
-  const categories = ['all', 'Technical', 'Cultural', 'Sports', 'Workshop', 'Competition']
+  const categories = ['all', 'Technical', 'Non-Technical']
 
   useEffect(() => {
     loadEvents()
