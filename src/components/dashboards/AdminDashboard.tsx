@@ -19,6 +19,7 @@ const AdminDashboard = () => {
     location: '',
     eventDate: '',
     eventTime: '',
+    banner: '',
     maxParticipants: 50,
     rules: [''],
     eligibility: '',
@@ -108,6 +109,7 @@ const AdminDashboard = () => {
       location: event.location,
       eventDate: event.eventDate.toISOString().split('T')[0],
       eventTime: event.eventTime,
+      banner: event.banner || '',
       maxParticipants: event.maxParticipants,
       rules: event.rules || [''],
       eligibility: event.eligibility,
@@ -125,6 +127,7 @@ const AdminDashboard = () => {
       location: '',
       eventDate: '',
       eventTime: '',
+      banner: '',
       maxParticipants: 50,
       rules: [''],
       eligibility: '',
@@ -309,6 +312,18 @@ const AdminDashboard = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium mb-2">Event Banner Image URL (Optional)</label>
+                <input
+                  type="url"
+                  value={eventForm.banner}
+                  onChange={(e) => setEventForm({ ...eventForm, banner: e.target.value })}
+                  className="input-field"
+                  placeholder="https://example.com/image.jpg"
+                />
+                <p className="text-sm text-gray-500 mt-1">Paste a direct link to an image (e.g., from imgur, cloudinary, or your website)</p>
+              </div>
+
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Date</label>
@@ -327,9 +342,10 @@ const AdminDashboard = () => {
                     value={eventForm.eventTime}
                     onChange={(e) => setEventForm({ ...eventForm, eventTime: e.target.value })}
                     className="input-field"
-                    placeholder="10:00 AM - 2:00 PM"
+                    placeholder="e.g., 10:00 AM - 2:00 PM"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Format: 10:00 AM - 2:00 PM</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Max Participants</label>

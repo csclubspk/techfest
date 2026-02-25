@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/fire
 import { db } from '../../lib/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Event, Registration } from '../../types'
-import { Users, CheckCircle, Trophy } from 'lucide-react'
+import { Users, CheckCircle, Trophy, Edit } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 
@@ -13,6 +13,11 @@ const EventHeadDashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [participants, setParticipants] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
+  const [showEditForm, setShowEditForm] = useState(false)
+  const [editForm, setEditForm] = useState({
+    description: '',
+    banner: '',
+  })
 
   useEffect(() => {
     loadAssignedEvents()
@@ -81,6 +86,46 @@ const EventHeadDashboard = () => {
     } catch (error) {
       console.error('Error updating attendance:', error)
       toast.error('Failed to update attendance')
+    }
+  }
+
+  const handleEditEvent = () => {
+    if (selectedEvent) {
+      setEditForm({
+        description: selectedEvent.description,
+        banner: selectedEvent.banner || '',
+      })
+      setShowEditForm(true)
+    }
+  }
+
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedEvent) return
+
+    try {
+      await updateDoc(doc(db, 'events', selectedEvent.id), {
+        description: editForm.description,
+        banner: editForm.banner || null,
+        updatedAt: new Date(),
+      })
+      
+      // Update local state
+      const updatedEvent = {
+        ...selectedEvent,
+        description: editForm.description,
+        banner: editForm.banner || undefined,
+      }
+      setSelectedEvent(updatedEvent)
+      setAssignedEvents(prev =>
+        prev.map(e => e.id === selectedEvent.id ? updatedEvent : e)
+      )
+      
+      setShowEditForm(false)
+      toast.success('Event updated successfully!')
+    } catch (error) {
+      console.error('Error updating event:', error)
+      toast.error('Failed to update event')
     }
   }
 
@@ -174,6 +219,119 @@ const EventHeadDashboard = () => {
                   <Trophy className="text-purple-400" size={40} />
                 </div>
               </div>
+            </div>
+
+            {/* Edit Event Details */}
+            <div className="glass-card p-6 rounded-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Event Details</h2>
+                <button
+                  onClick={handleEditEvent}
+                  className="btn-primary flex items-center space-x-2"
+                >
+                  <Edit size={18} />
+                  <span>Edit Event</span>
+                </button>
+              </div>
+
+              {showEditForm ? (
+                <form onSubmit={handleUpdateEvent} className="space-y-4 p-4 glass-card rounded-lg">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Event Title (Read-only)</label>
+                    <input
+                      type="text"
+                      value={selectedEvent.title}
+                      className="input-field bg-white/5 cursor-not-allowed"
+                      disabled
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Description</label>
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      className="input-field min-h-[120px]"
+                      placeholder="Update event description..."
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Event Banner Image URL (Optional)</label>
+                    <input
+                      type="url"
+                      value={editForm.banner}
+                      onChange={(e) => setEditForm({ ...editForm, banner: e.target.value })}
+                      className="input-field"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">Paste a direct link to an image</p>
+                  </div>
+
+                  {editForm.banner && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Banner Preview</label>
+                      <img
+                        src={editForm.banner}
+                        alt="Event banner preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://via.placeholder.com/800x200?text=Invalid+Image+URL'
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex space-x-4">
+                    <button type="submit" className="btn-primary">
+                      Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowEditForm(false)}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Description</h3>
+                    <p className="text-white">{selectedEvent.description}</p>
+                  </div>
+                  {selectedEvent.banner && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-400 mb-2">Event Banner</h3>
+                      <img
+                        src={selectedEvent.banner}
+                        alt="Event banner"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">Category:</span>
+                      <span className="ml-2 text-white">{selectedEvent.category}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Location:</span>
+                      <span className="ml-2 text-white">{selectedEvent.location}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Date:</span>
+                      <span className="ml-2 text-white">{selectedEvent.eventDate.toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Time:</span>
+                      <span className="ml-2 text-white">{selectedEvent.eventTime}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Participants Table */}

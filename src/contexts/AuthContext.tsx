@@ -119,7 +119,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       toast.success('Signed in with Google!')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in with Google')
+      // Don't show error for cancelled popup (user closed the popup)
+      if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+        toast.error(error.message || 'Failed to sign in with Google')
+      }
       throw error
     }
   }
