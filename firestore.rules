@@ -1,0 +1,135 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+    
+    function isCoordinator() {
+      return isSignedIn() && getUserData().role == 'coordinator';
+    }
+    
+    function isEventHead() {
+      return isSignedIn() && getUserData().role == 'eventHead';
+    }
+    
+    function isParticipant() {
+      return isSignedIn() && getUserData().role == 'participant';
+    }
+    
+    function isEventHeadOfEvent(eventId) {
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/events/$(eventId)).data.eventHeadId == request.auth.uid;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Anyone can read user profiles
+      allow read: if true;
+      
+      // Users can create their own profile during registration
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      
+      // Users can update their own profile
+      // Admins can update any profile
+      allow update: if isSignedIn() && 
+                      (request.auth.uid == userId || isAdmin());
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      // Anyone can read events
+      allow read: if true;
+      
+      // Only admins can create events
+      allow create: if isAdmin();
+      
+      // Admins and assigned event heads can update events
+      allow update: if isAdmin() || isEventHeadOfEvent(eventId);
+      
+      // Only admins can delete events
+      allow delete: if isAdmin();
+    }
+    
+    // Registrations collection
+    match /registrations/{registrationId} {
+      // Users can read their own registrations
+      // Admins, coordinators, and event heads can read all registrations
+      allow read: if isSignedIn() && 
+                    (resource.data.userId == request.auth.uid || 
+                     isAdmin() || 
+                     isCoordinator() || 
+                     isEventHead());
+      
+      // Authenticated users can create registrations for themselves
+      allow create: if isSignedIn() && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Event heads can update attendance
+      // Admins can update anything
+      allow update: if isAdmin() || 
+                      (isEventHead() && isEventHeadOfEvent(resource.data.eventId));
+      
+      // Only admins can delete registrations
+      allow delete: if isAdmin();
+    }
+    
+    // Announcements collection
+    match /announcements/{announcementId} {
+      // Anyone can read announcements
+      allow read: if true;
+      
+      // Admins and coordinators can create announcements
+      allow create: if isAdmin() || isCoordinator();
+      
+      // Admins and announcement authors can update
+      allow update: if isAdmin() || 
+                      (isCoordinator() && resource.data.authorId == request.auth.uid);
+      
+      // Only admins can delete announcements
+      allow delete: if isAdmin();
+    }
+    
+    // Winners collection
+    match /winners/{winnerId} {
+      // Anyone can read winners
+      allow read: if true;
+      
+      // Admins, coordinators, and event heads can create winners
+      allow create: if isAdmin() || isCoordinator() || isEventHead();
+      
+      // Only admins and coordinators can update winners
+      allow update: if isAdmin() || isCoordinator();
+      
+      // Only admins can delete winners
+      allow delete: if isAdmin();
+    }
+    
+    // Certificates collection
+    match /certificates/{certificateId} {
+      // Users can read their own certificates
+      // Admins can read all certificates
+      allow read: if isSignedIn() && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // System generates certificates (use Cloud Functions in production)
+      allow create: if isAdmin();
+      
+      // No updates or deletes allowed
+      allow update, delete: if false;
+    }
+  }
+}
