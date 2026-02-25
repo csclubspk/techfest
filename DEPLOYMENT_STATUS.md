@@ -76,16 +76,7 @@ Go to: https://console.firebase.google.com/project/webapps-e3580/firestore
 - Select location: `us-central` or nearest to you
 - Click "Enable"
 
-### 3. Enable Storage (1 minute)
-
-Go to: https://console.firebase.google.com/project/webapps-e3580/storage
-
-- Click "Get started"
-- Choose **production mode**
-- Use same location as Firestore
-- Click "Done"
-
-### 4. Deploy Security Rules (1 minute)
+### 3. Deploy Security Rules (1 minute)
 
 ```bash
 # Install Firebase CLI (if not installed)
@@ -94,12 +85,11 @@ npm install -g firebase-tools
 # Login to Firebase
 firebase login
 
-# Initialize Firebase (select Firestore and Storage)
+# Initialize Firebase (select Firestore only)
 firebase init
 
 # Deploy security rules
 firebase deploy --only firestore:rules
-firebase deploy --only storage:rules
 ```
 
 ## 👤 Create Your First Admin Account

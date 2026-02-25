@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from '../lib/firebase'
+import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { User, Camera, Mail, Shield, Download } from 'lucide-react'
+import { User, Mail, Shield, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { generateCertificate } from '../utils/certificateGenerator'
@@ -11,7 +10,6 @@ import { generateCertificate } from '../utils/certificateGenerator'
 const ProfilePage = () => {
   const { user } = useAuth()
   const [displayName, setDisplayName] = useState(user?.displayName || '')
-  const [uploading, setUploading] = useState(false)
   const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
@@ -19,35 +17,6 @@ const ProfilePage = () => {
       setDisplayName(user.displayName)
     }
   }, [user])
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) return
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('File size must be less than 2MB')
-      return
-    }
-
-    setUploading(true)
-    try {
-      const storageRef = ref(storage, `profile-photos/${user.uid}`)
-      await uploadBytes(storageRef, file)
-      const photoURL = await getDownloadURL(storageRef)
-
-      await updateDoc(doc(db, 'users', user.uid), {
-        photoURL,
-      })
-
-      toast.success('Profile photo updated!')
-      window.location.reload()
-    } catch (error) {
-      console.error('Error uploading photo:', error)
-      toast.error('Failed to upload photo')
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -143,16 +112,7 @@ const ProfilePage = () => {
                   {user.displayName[0]}
                 </div>
               )}
-              <label className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
-                <Camera size={20} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
+              {/* Photo upload disabled - Firebase Storage not configured */}
             </div>
 
             {/* Profile Info */}

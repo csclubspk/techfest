@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Sparkles, Calendar, Trophy, Users } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { collection, query, limit, getDocs, orderBy } from 'firebase/firestore'
 import { db } from '../lib/firebase'
@@ -38,12 +38,6 @@ const LandingPage = () => {
     }
   }
 
-  const stats = [
-    { icon: Calendar, label: 'Events', value: '20+' },
-    { icon: Users, label: 'Participants', value: '500+' },
-    { icon: Trophy, label: 'Prize Pool', value: '₹50K' },
-  ]
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -60,7 +54,7 @@ const LandingPage = () => {
             <div className="flex justify-center">
               <div className="inline-flex items-center space-x-2 glass-card px-4 py-2 rounded-full">
                 <Sparkles className="text-yellow-400" size={20} />
-                <span className="text-sm">February 25-28, 2026</span>
+                <span className="text-sm">February 27, 2026</span>
               </div>
             </div>
 
@@ -83,23 +77,6 @@ const LandingPage = () => {
               <Link to="/register" className="btn-secondary text-lg">
                 Register Now
               </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 md:gap-12 max-w-3xl mx-auto pt-12">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 + 0.5 }}
-                  className="glass-card p-6 rounded-xl"
-                >
-                  <stat.icon className="mx-auto mb-3 text-blue-400" size={32} />
-                  <div className="text-2xl md:text-3xl font-bold mb-1">{stat.value}</div>
-                  <div className="text-gray-400 text-sm">{stat.label}</div>
-                </motion.div>
-              ))}
             </div>
           </motion.div>
         </div>

@@ -23,12 +23,7 @@
    - Choose production mode
    - Select your region
 
-4. **Enable Storage**
-   - Go to Storage
-   - Click "Get started"
-   - Use production mode rules
-
-5. **Deploy Security Rules**
+4. **Deploy Security Rules**
    ```bash
    # Install Firebase CLI
    npm install -g firebase-tools
@@ -38,7 +33,6 @@
 
    # Deploy rules
    firebase deploy --only firestore:rules
-   firebase deploy --only storage:rules
    ```
 
 ### Step 2: Update Firebase Config
@@ -53,7 +47,6 @@
      apiKey: "YOUR_API_KEY",
      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
      projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_PROJECT_ID.appspot.com",
      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
      appId: "YOUR_APP_ID"
    }
@@ -88,7 +81,6 @@
      VITE_FIREBASE_API_KEY
      VITE_FIREBASE_AUTH_DOMAIN
      VITE_FIREBASE_PROJECT_ID
-     VITE_FIREBASE_STORAGE_BUCKET
      VITE_FIREBASE_MESSAGING_SENDER_ID
      VITE_FIREBASE_APP_ID
      ```
@@ -130,7 +122,6 @@ netlify deploy --prod
 - [ ] Firebase project created and configured
 - [ ] Authentication providers enabled
 - [ ] Firestore database created
-- [ ] Storage enabled
 - [ ] Security rules deployed
 - [ ] Firebase config updated in code
 - [ ] Code pushed to GitHub
@@ -187,7 +178,7 @@ git push origin main
 ### Firebase Connection Issues
 - Verify Firebase config is correct
 - Check if authorized domains include Netlify domain
-- Ensure Firestore and Storage are enabled
+- Ensure Firestore is enabled and security rules are deployed
 
 ### Authentication Not Working
 - Verify auth providers are enabled

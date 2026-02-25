@@ -1,5 +1,7 @@
 # Quick Setup Guide - SPK TechFest 2026
 
+> 📖 **New to the system?** Check [USER_GUIDE.md](USER_GUIDE.md) for complete workflows and how each role works!
+
 ## 🚀 Getting Started (5 Minutes)
 
 ### Step 1: Install Dependencies (1 min)
@@ -60,10 +62,19 @@ Your app will be available at: http://localhost:5173
 
 After creating your first admin, you can create these test accounts:
 
-1. **Admin**: admin@spk.edu (role: admin)
-2. **Coordinator**: coordinator@spk.edu (role: coordinator)
-3. **Event Head**: eventhead@spk.edu (role: eventHead)
-4. **Participant**: student@spk.edu (role: participant)
+**How to create accounts:**
+1. Go to `/register` and create account
+2. Find user in Firebase Firestore > `users` collection
+3. Edit the `role` field to desired role
+4. Save and the user will have that role
+
+**Suggested test accounts:**
+1. **Admin**: admin@spk.edu (role: `"admin"`)
+2. **Coordinator**: coordinator@spk.edu (role: `"coordinator"`)
+3. **Event Head**: eventhead@spk.edu (role: `"eventHead"`)
+4. **Participant**: student@spk.edu (role: `"participant"`)
+
+**Note**: Participants can create their own accounts directly - no admin setup needed!
 
 ## 📁 Project Structure
 
@@ -95,7 +106,6 @@ techfest-reg/
 │   └── index.css        # Global styles
 ├── public/              # Static assets
 ├── firestore.rules      # Firestore security rules
-├── storage.rules        # Storage security rules
 ├── firebase.json        # Firebase config
 └── package.json         # Dependencies
 
@@ -114,7 +124,6 @@ npm run lint            # Run ESLint
 firebase login          # Login to Firebase
 firebase deploy         # Deploy everything
 firebase deploy --only firestore:rules  # Deploy Firestore rules
-firebase deploy --only storage:rules    # Deploy Storage rules
 firebase deploy --only hosting          # Deploy hosting
 ```
 
@@ -131,7 +140,7 @@ firebase deploy --only hosting          # Deploy hosting
 
 ### For Event Heads
 - View assigned events
-- Add event details and banners
+- Add event details
 - View participants list
 - Mark attendance
 - Select winners
@@ -190,13 +199,11 @@ Before deploying to production:
 
 - [ ] Update Firebase config with production credentials
 - [ ] Deploy Firestore security rules
-- [ ] Deploy Storage security rules
 - [ ] Test all user roles
 - [ ] Verify email authentication works
 - [ ] Test Google OAuth
 - [ ] Check mobile responsiveness
 - [ ] Test certificate generation
-- [ ] Verify file uploads work
 - [ ] Review security rules
 - [ ] Set up backups
 - [ ] Configure custom domain
@@ -210,7 +217,7 @@ Before deploying to production:
 - Keep security rules strict
 - Test on mobile devices
 - Use meaningful event titles and descriptions
-- Upload high-quality event banners
+- Add detailed event information and rules
 - Post announcements regularly
 
 ## 🆘 Need Help?

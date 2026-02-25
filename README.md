@@ -2,6 +2,39 @@
 
 A modern, production-ready full-stack web application for managing college technical festival events with role-based access control, real-time updates, and automated certificate generation.
 
+> 📖 **For detailed user workflows and role-specific guides, see [USER_GUIDE.md](USER_GUIDE.md)**
+
+## 🎯 How It Works
+
+### For Participants:
+1. **Register** directly on the website (no approval needed)
+2. **Login** and browse available events
+3. **Select & register** for events you want to participate in
+4. **View dashboard** to track your registered events
+5. **Download certificates** after event completion (once approved by Event Head)
+
+### For Event Heads:
+1. **Admin creates** your account with Event Head role
+2. **Login** to view your assigned events
+3. **Approve registrations** by marking attendance during events
+4. **Select winners** after event completion
+5. **Generate reports** for your events
+
+### For Coordinators:
+1. **Admin creates** your account with Coordinator role
+2. **Oversee all events** across TechFest
+3. **Post announcements** for all participants
+4. **Approve winners** selected by Event Heads
+
+### For Admins:
+1. **Create events** for the TechFest
+2. **Create Coordinator & Event Head accounts**
+3. **Assign Event Heads** to specific events
+4. **Manage all users** and system settings
+5. **Export data** and view analytics
+
+---
+
 ## 🚀 Features
 
 ### Authentication & Authorization
@@ -33,14 +66,12 @@ A modern, production-ready full-stack web application for managing college techn
 #### Event Head Dashboard
 - Manage assigned events only
 - Add/edit event details
-- Upload event banners (Firebase Storage)
 - View event participants
 - Mark attendance
 - Select winners (1st, 2nd, 3rd place)
 
 #### Participant Dashboard
 - Create and edit profile
-- Upload profile photo
 - Register for multiple events
 - View registered events
 - Check announcements
@@ -69,7 +100,6 @@ A modern, production-ready full-stack web application for managing college techn
 ### Backend
 - **Firebase Authentication**
 - **Cloud Firestore** (Real-time database)
-- **Firebase Storage** (File uploads)
 - **Firestore Security Rules** (Role-based access)
 
 ### Libraries
@@ -110,12 +140,7 @@ npm install
       - Start in production mode
       - Choose your location
 
-   e. Enable Storage:
-      - Go to Storage
-      - Click "Get started"
-      - Start in production mode
-
-   f. Get your Firebase config:
+   e. Get your Firebase config:
       - Go to Project Settings > Your Apps
       - Click "Add app" > Web
       - Copy the configuration
@@ -129,7 +154,6 @@ Create a `.env` file in the root directory:
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
@@ -148,9 +172,6 @@ firebase init
 
 # Deploy Firestore rules
 firebase deploy --only firestore:rules
-
-# Deploy Storage rules
-firebase deploy --only storage:rules
 ```
 
 ## 🚀 Development
@@ -294,16 +315,47 @@ firebase deploy --only hosting
 - Prevention of duplicate registrations
 - Input sanitization and validation
 
-## 📝 Creating Admin User
+## 📝 User Account Creation
 
-After first user registration, manually update their role in Firestore:
+### Creating Your First Admin
 
-1. Go to Firebase Console > Firestore Database
-2. Find the user in the `users` collection
-3. Edit the document and change `role` to `"admin"`
-4. Save changes
+After deploying the application:
 
-Alternatively, create a Cloud Function for admin creation (recommended for production).
+1. **Register the first user** at `yoursite.com/register`
+2. Go to **Firebase Console** > **Firestore Database**
+3. Find the user in the `users` collection
+4. Edit the document and change `role` to `"admin"`
+5. Save and refresh the app - you now have admin access!
+
+### Creating Other User Roles (Admin Only)
+
+#### Create Coordinator:
+1. Admin registers a new account OR creates one manually
+2. In **Firestore** → `users` collection → find the user
+3. Change `role` field to `"coordinator"`
+4. The user can now login and access coordinator features
+
+#### Create Event Head:
+1. Admin registers a new account OR creates one manually
+2. In **Firestore** → `users` collection → find the user
+3. Change `role` field to `"eventHead"`
+4. Admin goes to **Dashboard** → **Edit Event**
+5. Assign this user as Event Head for specific events
+6. The user can now manage assigned events
+
+#### Participants (Self-Registration):
+- Participants can **directly create accounts** at `/register`
+- They are automatically assigned `"participant"` role
+- No admin approval needed
+- They can immediately start registering for events
+
+### Role Field Values
+
+Use these exact values in Firestore:
+- `"admin"` - Full system access
+- `"coordinator"` - Event oversight and announcements
+- `"eventHead"` - Manage assigned events
+- `"participant"` - Register and participate in events
 
 ## 🚧 Future Enhancements
 
