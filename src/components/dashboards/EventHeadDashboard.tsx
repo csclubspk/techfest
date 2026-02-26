@@ -512,6 +512,12 @@ const EventHeadDashboard = () => {
                       <span className="ml-2 text-white">{selectedEvent.category}</span>
                     </div>
                     <div>
+                      <span className="text-gray-400">Department:</span>
+                      <span className="ml-2 px-2 py-1 bg-blue-600/20 text-blue-400 rounded">
+                        {selectedEvent.department}
+                      </span>
+                    </div>
+                    <div>
                       <span className="text-gray-400">Location:</span>
                       <span className="ml-2 text-white">{selectedEvent.location}</span>
                     </div>

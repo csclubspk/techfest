@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, Timestamp } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
-import { Event, User, Announcement } from '../../types'
+import { Event, User, Announcement, Department } from '../../types'
 import { Plus, Edit, Trash2, Users, Calendar, TrendingUp, UserCog, Megaphone, Upload, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -23,6 +23,7 @@ const AdminDashboard = () => {
     title: '',
     description: '',
     category: 'Technical',
+    department: 'General' as Department,
     location: '',
     eventDate: '',
     eventTime: '',
@@ -128,6 +129,7 @@ const AdminDashboard = () => {
       title: event.title,
       description: event.description,
       category: event.category,
+      department: event.department || 'General',
       location: event.location,
       eventDate: event.eventDate.toISOString().split('T')[0],
       eventTime: event.eventTime,
@@ -146,6 +148,7 @@ const AdminDashboard = () => {
       title: '',
       description: '',
       category: 'Technical',
+      department: 'General',
       location: '',
       eventDate: '',
       eventTime: '',
@@ -166,6 +169,19 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error updating user role:', error)
       toast.error('Failed to update user role')
+    }
+  }
+
+  const handleUpdateUserDepartment = async (userId: string, newDepartment: Department) => {
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        department: newDepartment,
+      })
+      toast.success('User department updated successfully!')
+      loadData()
+    } catch (error) {
+      console.error('Error updating user department:', error)
+      toast.error('Failed to update user department')
     }
   }
 
@@ -572,6 +588,24 @@ const AdminDashboard = () => {
               </div>
 
               <div>
+                <label className="block text-sm font-medium mb-2">Department</label>
+                <select
+                  value={eventForm.department}
+                  onChange={(e) => setEventForm({ ...eventForm, department: e.target.value as Department })}
+                  className="input-field"
+                  required
+                >
+                  <option value="General">General (All Departments)</option>
+                  <option value="IT">Information Technology (IT)</option>
+                  <option value="CS">Computer Science (CS)</option>
+                  <option value="DS">Data Science (DS)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select the department this event belongs to
+                </p>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium mb-2">Description</label>
                 <textarea
                   value={eventForm.description}
@@ -806,6 +840,7 @@ const AdminDashboard = () => {
                         <th className="text-left py-3 px-4">Name</th>
                         <th className="text-left py-3 px-4">Email</th>
                         <th className="text-center py-3 px-4">Role</th>
+                        <th className="text-center py-3 px-4">Department</th>
                         <th className="text-center py-3 px-4">Change Role</th>
                         <th className="text-center py-3 px-4">Assign Event</th>
                         <th className="text-center py-3 px-4">Actions</th>
@@ -820,6 +855,23 @@ const AdminDashboard = () => {
                             <span className={`px-3 py-1 rounded-full text-sm border ${getRoleBadge(user.role)}`}>
                               {getRoleLabel(user.role)}
                             </span>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {(user.role === 'coordinator' || user.role === 'eventHead') && (
+                              <select
+                                value={user.department || 'General'}
+                                onChange={(e) => handleUpdateUserDepartment(user.uid, e.target.value as Department)}
+                                className="input-field text-sm py-2"
+                              >
+                                <option value="General">General</option>
+                                <option value="IT">IT</option>
+                                <option value="CS">CS</option>
+                                <option value="DS">DS</option>
+                              </select>
+                            )}
+                            {user.role === 'admin' && (
+                              <span className="text-gray-500 text-sm">-</span>
+                            )}
                           </td>
                           <td className="py-3 px-4 text-center">
                             <select
@@ -841,11 +893,13 @@ const AdminDashboard = () => {
                                 defaultValue=""
                               >
                                 <option value="" disabled>Assign to event...</option>
-                                {events.map((event) => (
-                                  <option key={event.id} value={event.id}>
-                                    {event.title}
-                                  </option>
-                                ))}
+                                {events
+                                  .filter(event => event.department === user.department || event.department === 'General')
+                                  .map((event) => (
+                                    <option key={event.id} value={event.id}>
+                                      {event.title}
+                                    </option>
+                                  ))}
                               </select>
                             )}
                           </td>

@@ -63,7 +63,14 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-white/10">
-          <span className="text-sm text-gray-400">{event.category}</span>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm px-2 py-1 bg-blue-600/20 text-blue-400 rounded">
+              {event.category}
+            </span>
+            <span className="text-sm px-2 py-1 bg-purple-600/20 text-purple-400 rounded">
+              {event.department}
+            </span>
+          </div>
           <Link
             to={`/events/${event.id}`}
             className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors group"

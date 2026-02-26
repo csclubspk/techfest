@@ -25,25 +25,35 @@ A modern, production-ready full-stack web application for managing college techn
 
 ### For Coordinators:
 1. **Admin creates** your account with Coordinator role
-2. **Oversee all events** across TechFest
-3. **Post announcements** for all participants
-4. **Approve winners** selected by Event Heads
+2. **Admin assigns** you to a department (IT, CS, DS, or General)
+3. **Login** to view events in your department
+4. **Create events** within your assigned department
+5. **Manage event details** (description, banner, date, location)
+6. **Assign event heads** from your department to events
+7. **Post announcements** for all participants
+8. **Edit or delete events** in your department
 
 ### For Admins:
 1. **Create events** for the TechFest
-2. **Upload event banners** (file upload or URL)
-3. **Create Coordinator & Event Head accounts**
-4. **Manage announcements** (Create, Edit, Delete)
-6. **Export participant data** to CSV/Excel
-7. **Manage all users** with separated staff and participant views
-8. **View analytics** and system statism settings
-7. **Export data** and view analytics
+2. **Assign departments** to events (IT, CS, DS, or General)
+3. **Upload event banners** (file upload or URL)
+4. **Create Coordinator & Event Head accounts**
+5. **Assign departments** to coordinators and event heads
+6. **Manage announcements** (Create, Edit, Delete)
+7. **Export participant data** to CSV/Excel
+8. **Manage all users** with separated staff and participant views
+9. **View analytics** and system statistics
+10. **Full control** over all departments and events
 
 ---
 
 ## 🚀 Features
 
 ### 🆕 Latest Features (2026)
+- **Department Organization**: Events organized by departments (IT, CS, DS, General)
+- **Coordinator Event Creation**: Coordinators can create and manage events in their department
+- **Department-Based Access Control**: Separate management of events by department
+- **Department Filtering**: Filter events by department on the events page
 - **Official Certificate Design**: SPK College branded certificates with proper formatting
 - **Individual Event Certificates**: Download participation certificates for each event separately
 - **Image Upload**: Upload event banners directly from your computer (max 5MB)
@@ -69,35 +79,42 @@ A modern, production-ready full-stack web application for managing college techn
 
 #### Admin Dashboard
 - Create, edit, and delete events
+- Assign departments to events (IT, CS, DS, General)
 - Upload event banner images (file upload or URL)
 - **CRUD operations on announcements** (Create, Read, Update, Delete)
 - Edit announcement priority and content
 - View all announcements with timestamps
 - **Export all participants to CSV/Excel**
-- Assign coordinators and event heads
-- Manage user roles
+- Assign coordinators and event heads to departments
+- Assign event heads to specific events
+- Manage user roles and departments
 - **Separated user management** (Staff vs Participants)
 - View analytics and statistics
 
 #### Coordinator Dashboard
-- View all events and registrations
-- Post announcements
+- View events in assigned department only
+- **Create events** within own department
+- **Edit and delete events** in own department
+- Upload event banner images
+- **Assign event heads** from own department to events
+- Post announcements for all participants
 - Manage live event status
-- Approve winners
-- Monitor participant statistics
+- Monitor participant statistics for department events
 
 #### Event Head Dashboard
+- View assigned events in own department
 - **Start event** (triggers auto-announcement)
-- **End event** (triggers completion 
+- **End event** (triggers completion announcement)
 - Edit event details (description and banner)
 - Upload event banner images
-- Start event (triggers auto-announcement)
 - View event participants
 - Mark attendance
 - Select winners (1st, 2nd, 3rd place)
 - Auto-announce winners when declared
 
-##View all registered events with complete details
+#### Participant Dashboard
+- View all registered events with complete details
+- Filter events by department
 - See event banners, date, time, and location
 - Track attendance status for each event
 - **Download individual certificates** for each attended event
@@ -269,6 +286,7 @@ firebase deploy --only hosting
   displayName: string
   photoURL: string | null
   role: 'admin' | 'coordinator' | 'eventHead' | 'participant'
+  department?: 'IT' | 'CS' | 'DS' | 'General'  // For coordinators and event heads
   createdAt: Timestamp
 }
 ```
@@ -287,8 +305,11 @@ firebase deploy --only hosting
   eventTime: string
   location: string
   category: string
+  department: 'IT' | 'CS' | 'DS' | 'General'
   eventHeadId: string | null
   eventHeadName: string | null
+  coordinatorId: string | null
+  coordinatorName: string | null
   isLive: boolean
   createdAt: Timestamp
   updatedAt: Timestamp
@@ -374,15 +395,18 @@ After deploying the application:
 1. Admin registers a new account OR creates one manually
 2. In **Firestore** → `users` collection → find the user
 3. Change `role` field to `"coordinator"`
-4. The user can now login and access coordinator features
+4. Add `department` field with value: `"IT"`, `"CS"`, `"DS"`, or `"General"`
+5. OR use the Admin Dashboard to assign role and department
+6. The coordinator can now login and create/manage events in their department
 
 #### Create Event Head:
 1. Admin registers a new account OR creates one manually
 2. In **Firestore** → `users` collection → find the user
 3. Change `role` field to `"eventHead"`
-4. Admin goes to **Dashboard** → **Edit Event**
-5. Assign this user as Event Head for specific events
-6. The user can now manage assigned events
+4. Add `department` field with value: `"IT"`, `"CS"`, `"DS"`, or `"General"`
+5. OR use the Admin Dashboard to assign role and department
+6. Admin or Coordinator assigns this event head to specific events
+7. The event head can now manage assigned events in their department
 
 #### Participants (Self-Registration):
 - Participants can **directly create accounts** at `/register`
@@ -393,10 +417,26 @@ After deploying the application:
 ### Role Field Values
 
 Use these exact values in Firestore:
-- `"admin"` - Full system access
-- `"coordinator"` - Event oversight and announcements
-- `"eventHead"` - Manage assigned events
-- `"participant"` - Register and participate in events
+- `"admin"` - Full system access (no department needed)
+- `"coordinator"` - Event oversight and creation for assigned department
+  - Required: `department` field: `"IT"`, `"CS"`, `"DS"`, or `"General"`
+- `"eventHead"` - Manage assigned events within department
+  - Required: `department` field: `"IT"`, `"CS"`, `"DS"`, or `"General"`
+- `"participant"` - Register and participate in events (no department needed)
+
+### Department Organization
+
+The platform now supports departmental organization:
+- **IT** - Information Technology Department
+- **CS** - Computer Science Department  
+- **DS** - Data Science Department
+- **General** - Cross-departmental or college-wide events
+
+**Department Access Control:**
+- Coordinators can only create and manage events in their assigned department
+- Event heads can only be assigned to events in their department
+- Participants can view and register for events across all departments
+- Admins have full access to all departments
 
 ## 🚧 Future Enhancements
 

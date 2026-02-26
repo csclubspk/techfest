@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, query, getDocs, orderBy } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { Event } from '../types'
+import { Event, Department } from '../types'
 import EventCard from '../components/EventCard'
 import { Search, Filter } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -12,8 +12,10 @@ const EventsPage = () => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | 'all'>('all')
 
   const categories = ['all', 'Technical', 'Non-Technical']
+  const departments: (Department | 'all')[] = ['all', 'General', 'IT', 'CS', 'DS']
 
   useEffect(() => {
     loadEvents()
@@ -21,7 +23,7 @@ const EventsPage = () => {
 
   useEffect(() => {
     filterEvents()
-  }, [searchTerm, selectedCategory, events])
+  }, [searchTerm, selectedCategory, selectedDepartment, events])
 
   const loadEvents = async () => {
     try {
@@ -48,6 +50,10 @@ const EventsPage = () => {
 
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(event => event.category === selectedCategory)
+    }
+
+    if (selectedDepartment !== 'all') {
+      filtered = filtered.filter(event => event.department === selectedDepartment)
     }
 
     if (searchTerm) {
@@ -92,6 +98,7 @@ const EventsPage = () => {
           {/* Category Filter */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-2">
             <Filter size={20} className="text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-400 font-medium mr-2">Category:</span>
             {categories.map((category) => (
               <button
                 key={category}
@@ -103,6 +110,25 @@ const EventsPage = () => {
                 }`}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Department Filter */}
+          <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+            <Filter size={20} className="text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-400 font-medium mr-2">Department:</span>
+            {departments.map((dept) => (
+              <button
+                key={dept}
+                onClick={() => setSelectedDepartment(dept)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                  selectedDepartment === dept
+                    ? 'bg-purple-600 text-white'
+                    : 'glass-card hover:bg-white/10'
+                }`}
+              >
+                {dept === 'all' ? 'All Departments' : dept}
               </button>
             ))}
           </div>

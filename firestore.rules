@@ -32,6 +32,18 @@ service cloud.firestore {
              get(/databases/$(database)/documents/events/$(eventId)).data.eventHeadId == request.auth.uid;
     }
     
+    function getUserDepartment() {
+      return getUserData().department;
+    }
+    
+    function isCoordinatorOfDepartment(department) {
+      return isCoordinator() && getUserDepartment() == department;
+    }
+    
+    function isEventHeadOfDepartment(department) {
+      return isEventHead() && getUserDepartment() == department;
+    }
+    
     // Users collection
     match /users/{userId} {
       // Anyone can read user profiles
@@ -54,14 +66,22 @@ service cloud.firestore {
       // Anyone can read events
       allow read: if true;
       
-      // Only admins can create events
-      allow create: if isAdmin();
+      // Admins can create all events
+      // Coordinators can create events in their department
+      allow create: if isAdmin() || 
+                      (isCoordinator() && request.resource.data.department == getUserDepartment());
       
-      // Admins and assigned event heads can update events
-      allow update: if isAdmin() || isEventHeadOfEvent(eventId);
+      // Admins can update all events
+      // Coordinators can update events in their department
+      // Event heads can update their assigned events in their department
+      allow update: if isAdmin() || 
+                      isCoordinatorOfDepartment(resource.data.department) ||
+                      (isEventHeadOfEvent(eventId) && isEventHeadOfDepartment(resource.data.department));
       
-      // Only admins can delete events
-      allow delete: if isAdmin();
+      // Admins can delete all events
+      // Coordinators can delete events in their department
+      allow delete: if isAdmin() || 
+                      isCoordinatorOfDepartment(resource.data.department);
     }
     
     // Registrations collection

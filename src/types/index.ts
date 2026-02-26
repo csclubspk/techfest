@@ -1,4 +1,5 @@
 export type UserRole = 'admin' | 'coordinator' | 'eventHead' | 'participant'
+export type Department = 'IT' | 'CS' | 'DS' | 'General'
 
 export interface User {
   uid: string
@@ -6,6 +7,7 @@ export interface User {
   displayName: string
   photoURL?: string
   role: UserRole
+  department?: Department
   createdAt: Date
 }
 
@@ -22,8 +24,11 @@ export interface Event {
   eventTime: string
   location: string
   category: string
+  department: Department
   eventHeadId?: string
   eventHeadName?: string
+  coordinatorId?: string
+  coordinatorName?: string
   isLive: boolean
   createdAt: Date
   updatedAt: Date
