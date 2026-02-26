@@ -344,6 +344,7 @@ const EventHeadDashboard = () => {
               setSelectedEvent(event || null)
             }}
             className="input-field"
+            aria-label="Select event to manage"
           >
             {assignedEvents.map((event) => (
               <option key={event.id} value={event.id}>
@@ -413,6 +414,7 @@ const EventHeadDashboard = () => {
                       type="text"
                       value={selectedEvent.title}
                       className="input-field bg-white/5 cursor-not-allowed"
+                      aria-label="Event title"
                       disabled
                     />
                   </div>
@@ -599,6 +601,7 @@ const EventHeadDashboard = () => {
                       value={winnerForm.first}
                       onChange={(e) => setWinnerForm({ ...winnerForm, first: e.target.value })}
                       className="input-field"
+                      aria-label="Select first place winner"
                       required
                     >
                       <option value="">Select participant...</option>
@@ -620,6 +623,7 @@ const EventHeadDashboard = () => {
                       value={winnerForm.second}
                       onChange={(e) => setWinnerForm({ ...winnerForm, second: e.target.value })}
                       className="input-field"
+                      aria-label="Select second place winner"
                       required
                     >
                       <option value="">Select participant...</option>
@@ -641,6 +645,7 @@ const EventHeadDashboard = () => {
                       value={winnerForm.third}
                       onChange={(e) => setWinnerForm({ ...winnerForm, third: e.target.value })}
                       className="input-field"
+                      aria-label="Select third place winner"
                       required
                     >
                       <option value="">Select participant...</option>

@@ -476,6 +476,7 @@ const AdminDashboard = () => {
                   value={announcementForm.priority}
                   onChange={(e) => setAnnouncementForm({ ...announcementForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
                   className="input-field"
+                  aria-label="Announcement priority"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -580,6 +581,7 @@ const AdminDashboard = () => {
                     value={eventForm.category}
                     onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
                     className="input-field"
+                    aria-label="Event category"
                   >
                     <option>Technical</option>
                     <option>Non-Technical</option>
@@ -611,6 +613,7 @@ const AdminDashboard = () => {
                   value={eventForm.description}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   className="input-field min-h-[100px]"
+                  aria-label="Event description"
                   required
                 />
               </div>
@@ -756,12 +759,14 @@ const AdminDashboard = () => {
                         <button
                           onClick={() => handleEditEvent(event)}
                           className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                          aria-label="Edit event"
                         >
                           <Edit size={18} className="text-blue-400" />
                         </button>
                         <button
                           onClick={() => handleDeleteEvent(event.id)}
                           className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                          aria-label="Delete event"
                         >
                           <Trash2 size={18} className="text-red-400" />
                         </button>
@@ -862,6 +867,7 @@ const AdminDashboard = () => {
                                 value={user.department || 'General'}
                                 onChange={(e) => handleUpdateUserDepartment(user.uid, e.target.value as Department)}
                                 className="input-field text-sm py-2"
+                                aria-label={`Department for ${user.displayName}`}
                               >
                                 <option value="General">General</option>
                                 <option value="IT">IT</option>
@@ -878,6 +884,7 @@ const AdminDashboard = () => {
                               value={user.role}
                               onChange={(e) => handleUpdateUserRole(user.uid, e.target.value)}
                               className="input-field text-sm py-2"
+                              aria-label={`Role for ${user.displayName}`}
                             >
                               <option value="participant">Participant</option>
                               <option value="eventHead">Event Head</option>
@@ -979,6 +986,7 @@ const AdminDashboard = () => {
                         value={event.eventHeadId || ''}
                         onChange={(e) => handleAssignEventHead(event.id, e.target.value)}
                         className="input-field text-sm py-2 max-w-xs"
+                        aria-label={`Assign event head for ${event.title}`}
                       >
                         <option value="">Unassigned</option>
                         {users

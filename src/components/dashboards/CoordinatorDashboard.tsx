@@ -457,6 +457,7 @@ const CoordinatorDashboard = () => {
                   value={newAnnouncement.content}
                   onChange={(e) => setNewAnnouncement({ ...newAnnouncement, content: e.target.value })}
                   className="input-field min-h-[100px]"
+                  aria-label="Announcement content"
                   required
                 />
               </div>
@@ -466,6 +467,7 @@ const CoordinatorDashboard = () => {
                   value={newAnnouncement.priority}
                   onChange={(e) => setNewAnnouncement({ ...newAnnouncement, priority: e.target.value as any })}
                   className="input-field"
+                  aria-label="Announcement priority"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -563,6 +565,7 @@ const CoordinatorDashboard = () => {
                     value={eventForm.category}
                     onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
                     className="input-field"
+                    aria-label="Event category"
                   >
                     <option>Technical</option>
                     <option>Non-Technical</option>
@@ -576,6 +579,7 @@ const CoordinatorDashboard = () => {
                   value={eventForm.description}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   className="input-field min-h-[100px]"
+                  aria-label="Event description"
                   required
                 />
               </div>
@@ -732,6 +736,7 @@ const CoordinatorDashboard = () => {
                         value={event.eventHeadId || ''}
                         onChange={(e) => handleAssignEventHead(event.id, e.target.value)}
                         className="input-field text-sm py-2"
+                        aria-label={`Assign event head for ${event.title}`}
                       >
                         <option value="">Unassigned</option>
                         {allUsers
