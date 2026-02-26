@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore'
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, getDoc } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Event, Announcement, User } from '../../types'
@@ -41,9 +41,15 @@ const CoordinatorDashboard = () => {
 
     try {
       // Load current user data
-      const userDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)))
-      if (!userDoc.empty) {
-        const userData = userDoc.docs[0].data() as User
+      const userDocRef = doc(db, 'users', user.uid)
+      const userDocSnap = await getDoc(userDocRef)
+      
+      if (userDocSnap.exists()) {
+        const userData = {
+          uid: userDocSnap.id,
+          ...userDocSnap.data(),
+          createdAt: userDocSnap.data().createdAt?.toDate(),
+        } as User
         setCurrentUserData(userData)
 
         // Load events for coordinator's department
@@ -63,6 +69,8 @@ const CoordinatorDashboard = () => {
           event => event.department === userData.department || event.department === 'General'
         )
         setEvents(filteredEvents)
+      } else {
+        toast.error('User data not found. Please contact admin.')
       }
 
       // Load all users
@@ -85,6 +93,7 @@ const CoordinatorDashboard = () => {
       setAnnouncements(announcementsData)
     } catch (error) {
       console.error('Error loading data:', error)
+      toast.error('Failed to load dashboard data')
     }
   }
 
@@ -230,7 +239,30 @@ const CoordinatorDashboard = () => {
   const totalParticipants = events.reduce((sum, event) => sum + event.currentParticipants, 0)
 
   if (!currentUserData) {
-    return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">Loading...</div>
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="glass-card p-8 rounded-xl text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!currentUserData.department) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="glass-card p-8 rounded-xl text-center">
+          <h2 className="text-2xl font-bold mb-4 text-yellow-400">Department Not Assigned</h2>
+          <p className="text-gray-400 mb-2">
+            Your account does not have a department assigned yet.
+          </p>
+          <p className="text-gray-400">
+            Please contact an administrator to assign you to a department (IT, CS, or DS).
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
