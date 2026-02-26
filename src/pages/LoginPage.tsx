@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Mail, Lock, Chrome } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -9,13 +9,14 @@ const LoginPage = () => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const { signIn, signInWithGoogle } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
       await signIn(email, password)
-      // Redirect will be handled automatically by App.tsx route
+      navigate('/dashboard')
     } catch (error) {
       console.error(error)
       setLoading(false)
@@ -26,7 +27,7 @@ const LoginPage = () => {
     setLoading(true)
     try {
       await signInWithGoogle()
-      // Redirect will be handled automatically by App.tsx route
+      navigate('/dashboard')
     } catch (error) {
       console.error(error)
       setLoading(false)

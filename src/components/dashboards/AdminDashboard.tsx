@@ -934,7 +934,6 @@ const AdminDashboard = () => {
                         <th className="text-left py-3 px-4">Name</th>
                         <th className="text-left py-3 px-4">Email</th>
                         <th className="text-center py-3 px-4">Registered</th>
-                        <th className="text-center py-3 px-4">Promote</th>
                         <th className="text-center py-3 px-4">Actions</th>
                       </tr>
                     </thead>
@@ -945,17 +944,6 @@ const AdminDashboard = () => {
                           <td className="py-3 px-4 text-gray-400">{user.email}</td>
                           <td className="py-3 px-4 text-center text-gray-400 text-sm">
                             {user.createdAt.toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <select
-                              value={user.role}
-                              onChange={(e) => handleUpdateUserRole(user.uid, e.target.value)}
-                              className="input-field text-sm py-2"
-                            >
-                              <option value="participant">Participant</option>
-                              <option value="eventHead">Event Head</option>
-                              <option value="coordinator">Coordinator</option>
-                            </select>
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex justify-center">

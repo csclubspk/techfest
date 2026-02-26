@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, getDoc } from 'firebase/firestore'
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, getDoc, where } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Event, Announcement, User } from '../../types'
-import { Calendar, Users, Megaphone, TrendingUp, Plus, Edit, Trash2, Upload } from 'lucide-react'
+import { Calendar, Users, Megaphone, TrendingUp, Plus, Edit, Trash2, Upload, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { uploadImage } from '../../utils/imageUpload'
@@ -17,8 +17,9 @@ const CoordinatorDashboard = () => {
   const [showAnnouncementForm, setShowAnnouncementForm] = useState(false)
   const [showEventForm, setShowEventForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
-  const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', priority: 'medium' as const })
+  const [newAnnouncement, setNewAnnouncement] = useState<{ title: string; content: string; priority: 'low' | 'medium' | 'high' }>({ title: '', content: '', priority: 'medium' })
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -102,19 +103,54 @@ const CoordinatorDashboard = () => {
     if (!user) return
 
     try {
-      await addDoc(collection(db, 'announcements'), {
-        ...newAnnouncement,
-        author: user.displayName,
-        authorId: user.uid,
-        createdAt: new Date(),
-      })
-      toast.success('Announcement posted successfully!')
+      if (editingAnnouncement) {
+        // Update existing announcement
+        await updateDoc(doc(db, 'announcements', editingAnnouncement.id), {
+          title: newAnnouncement.title,
+          content: newAnnouncement.content,
+          priority: newAnnouncement.priority,
+        })
+        toast.success('Announcement updated successfully!')
+        setEditingAnnouncement(null)
+      } else {
+        // Create new announcement
+        await addDoc(collection(db, 'announcements'), {
+          ...newAnnouncement,
+          author: user.displayName,
+          authorId: user.uid,
+          createdAt: new Date(),
+        })
+        toast.success('Announcement posted successfully!')
+      }
       setNewAnnouncement({ title: '', content: '', priority: 'medium' })
       setShowAnnouncementForm(false)
       loadData()
     } catch (error) {
-      console.error('Error posting announcement:', error)
-      toast.error('Failed to post announcement')
+      console.error('Error with announcement:', error)
+      toast.error('Failed to process announcement')
+    }
+  }
+
+  const handleEditAnnouncement = (announcement: Announcement) => {
+    setEditingAnnouncement(announcement)
+    setNewAnnouncement({
+      title: announcement.title,
+      content: announcement.content,
+      priority: announcement.priority,
+    })
+    setShowAnnouncementForm(true)
+  }
+
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    if (!confirm('Are you sure you want to delete this announcement?')) return
+
+    try {
+      await deleteDoc(doc(db, 'announcements', announcementId))
+      toast.success('Announcement deleted successfully!')
+      loadData()
+    } catch (error) {
+      console.error('Error deleting announcement:', error)
+      toast.error('Failed to delete announcement')
     }
   }
 
@@ -218,6 +254,72 @@ const CoordinatorDashboard = () => {
       rules: [''],
       eligibility: '',
     })
+  }
+
+  const handleExportEventData = async (eventId: string, eventTitle: string) => {
+    try {
+      // Get registrations for this event
+      const registrationsQuery = query(
+        collection(db, 'registrations'),
+        where('eventId', '==', eventId)
+      )
+      const registrationsSnapshot = await getDocs(registrationsQuery)
+      const registrations = registrationsSnapshot.docs.map(doc => doc.data())
+
+      // Get winners for this event
+      const winnersQuery = query(
+        collection(db, 'winners'),
+        where('eventId', '==', eventId)
+      )
+      const winnersSnapshot = await getDocs(winnersQuery)
+      const winners = winnersSnapshot.docs.map(doc => doc.data())
+
+      // Create CSV headers
+      const csvHeaders = [
+        'Name',
+        'Email',
+        'Registered At',
+        'Attended',
+        'Winner Position',
+      ].join(',')
+
+      // Create CSV rows
+      const csvRows = registrations.map((reg: any) => {
+        const winner = winners.find((w: any) => w.userId === reg.userId)
+        const winnerPosition = winner 
+          ? winner.position === 1 ? '1st Place' 
+          : winner.position === 2 ? '2nd Place' 
+          : '3rd Place'
+          : '-'
+
+        return [
+          reg.userName || '',
+          reg.userEmail || '',
+          reg.registeredAt?.toDate?.()?.toLocaleDateString() || '',
+          reg.attended ? 'Yes' : 'No',
+          winnerPosition,
+        ].join(',')
+      })
+
+      // Combine headers and rows
+      const csvContent = [csvHeaders, ...csvRows].join('\n')
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${eventTitle.replace(/\s+/g, '-')}-Report-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      toast.success('Event report exported successfully!')
+    } catch (error) {
+      console.error('Error exporting event data:', error)
+      toast.error('Failed to export event data')
+    }
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -370,7 +472,22 @@ const CoordinatorDashboard = () => {
                   <option value="high">High</option>
                 </select>
               </div>
-              <button type="submit" className="btn-primary">Post Announcement</button>
+              <button type="submit" className="btn-primary">
+                {editingAnnouncement ? 'Update Announcement' : 'Post Announcement'}
+              </button>
+              {editingAnnouncement && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingAnnouncement(null)
+                    setNewAnnouncement({ title: '', content: '', priority: 'medium' })
+                    setShowAnnouncementForm(false)
+                  }}
+                  className="btn-secondary"
+                >
+                  Cancel Edit
+                </button>
+              )}
             </form>
           )}
 
@@ -378,20 +495,36 @@ const CoordinatorDashboard = () => {
             {announcements.map((announcement) => (
               <div key={announcement.id} className="glass-card p-4 rounded-lg">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold text-lg">{announcement.title}</h3>
                     <p className="text-gray-400 mt-1">{announcement.content}</p>
                     <p className="text-sm text-gray-500 mt-2">
                       By {announcement.author} • {announcement.createdAt.toLocaleDateString()}
                     </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm ${
-                    announcement.priority === 'high' ? 'bg-red-600/20 text-red-400' :
-                    announcement.priority === 'medium' ? 'bg-yellow-600/20 text-yellow-400' :
-                    'bg-blue-600/20 text-blue-400'
-                  }`}>
-                    {announcement.priority}
-                  </span>
+                  <div className="flex items-center space-x-3 ml-4">
+                    <span className={`px-3 py-1 rounded-full text-sm ${
+                      announcement.priority === 'high' ? 'bg-red-600/20 text-red-400' :
+                      announcement.priority === 'medium' ? 'bg-yellow-600/20 text-yellow-400' :
+                      'bg-blue-600/20 text-blue-400'
+                    }`}>
+                      {announcement.priority}
+                    </span>
+                    <button
+                      onClick={() => handleEditAnnouncement(announcement)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      title="Edit announcement"
+                    >
+                      <Edit size={18} className="text-blue-400" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAnnouncement(announcement.id)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      title="Delete announcement"
+                    >
+                      <Trash2 size={18} className="text-red-400" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -612,6 +745,13 @@ const CoordinatorDashboard = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex justify-center space-x-2">
+                        <button
+                          onClick={() => handleExportEventData(event.id, event.title)}
+                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                          title="Export event report"
+                        >
+                          <Download size={18} className="text-green-400" />
+                        </button>
                         <button
                           onClick={() => handleEditEvent(event)}
                           className="p-2 hover:bg-white/10 rounded-lg transition-colors"
